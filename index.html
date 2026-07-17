@@ -585,6 +585,40 @@
                 </div>
             </div>
 
+            <!-- WebIntelligence Processing Servers Section -->
+            <div style="border-top: 3px solid rgba(255,255,255,0.3); padding-top: 40px; margin-bottom: 40px;">
+                <div class="overall-status">
+                    <h2>WebIntelligence Processing Servers</h2>
+                    <div class="status-indicator unknown pulse" id="webiOverallStatus">
+                        CHECKING...
+                    </div>
+                    <p class="status-message" id="webiStatusMessage">Aggregated from all SAP BO nodes...</p>
+                </div>
+
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <div class="stat-value" id="webiTotalServers">-</div>
+                        <div class="stat-label">Total WebI Servers</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="webiUpServers" style="color: #10b981;">-</div>
+                        <div class="stat-label">WebI Up</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="webiDownServers" style="color: #ef4444;">-</div>
+                        <div class="stat-label">WebI Down</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="webiAvgResponseTime">-</div>
+                        <div class="stat-label">Avg Response</div>
+                    </div>
+                </div>
+
+                <div class="nodes-grid" id="webiServersContainer">
+                    <!-- WebI servers will be populated here -->
+                </div>
+            </div>
+
             <!-- Tomcat Servers Section -->
             <div style="border-top: 3px solid rgba(255,255,255,0.3); padding-top: 40px;">
                 <div class="overall-status">
@@ -1013,6 +1047,48 @@ For support: it-support@uchicago.edu`);
             return nodes;
         }
 
+        // Generate WebIntelligence Processing Servers data (aggregated from all 4 nodes)
+        function generateWebIServersData() {
+            // Each SAP BO node has multiple WebI processing servers
+            const webiServers = [
+                // Node 1 WebI servers
+                { name: 'WebIntelligenceProcessingServer1 (Node 1)', node: 1, status: 'UP', responseTime: 178 },
+                { name: 'WebIntelligenceProcessingServer2 (Node 1)', node: 1, status: 'UP', responseTime: 165 },
+                { name: 'WebIntelligenceProcessingServer3 (Node 1)', node: 1, status: 'UP', responseTime: 192 },
+
+                // Node 2 WebI servers
+                { name: 'WebIntelligenceProcessingServer1 (Node 2)', node: 2, status: 'UP', responseTime: 156 },
+                { name: 'WebIntelligenceProcessingServer2 (Node 2)', node: 2, status: 'UP', responseTime: 188 },
+                { name: 'WebIntelligenceProcessingServer3 (Node 2)', node: 2, status: 'UP', responseTime: 201 },
+
+                // Node 3 WebI servers
+                { name: 'WebIntelligenceProcessingServer1 (Node 3)', node: 3, status: 'UP', responseTime: 143 },
+                { name: 'WebIntelligenceProcessingServer2 (Node 3)', node: 3, status: 'UP', responseTime: 177 },
+                { name: 'WebIntelligenceProcessingServer3 (Node 3)', node: 3, status: 'UP', responseTime: 195 },
+
+                // Node 4 WebI servers
+                { name: 'WebIntelligenceProcessingServer1 (Node 4)', node: 4, status: 'UP', responseTime: 168 },
+                { name: 'WebIntelligenceProcessingServer2 (Node 4)', node: 4, status: 'UP', responseTime: 182 },
+                { name: 'WebIntelligenceProcessingServer3 (Node 4)', node: 4, status: 'UP', responseTime: 159 }
+            ];
+
+            const servers = [];
+
+            webiServers.forEach(server => {
+                servers.push({
+                    node_name: server.name,
+                    status: server.status,
+                    response_time_ms: server.responseTime,
+                    last_check_at: new Date().toISOString(),
+                    last_up_at: new Date().toISOString(),
+                    consecutive_failures: 0,
+                    source_node: server.node
+                });
+            });
+
+            return servers;
+        }
+
         // Generate Tomcat servers data
         function generateTomcatServersData() {
             const tomcatServers = [
@@ -1331,6 +1407,21 @@ For support: it-support@uchicago.edu`);
             updateSAPBOOverallStatus(nodesOverallStatus, nodes.length);
             renderSAPBONodes(nodes);
 
+            // Load WebIntelligence Processing Servers
+            const webiServers = generateWebIServersData();
+
+            const allWebiUp = webiServers.every(n => n.status === 'UP');
+            const anyWebiDown = webiServers.some(n => n.status === 'DOWN');
+
+            let webiOverallStatus;
+            if (allWebiUp) webiOverallStatus = 'UP';
+            else if (anyWebiDown) webiOverallStatus = 'DOWN';
+            else webiOverallStatus = 'DEGRADED';
+
+            updateWebIOverallStatus(webiOverallStatus, webiServers.length);
+            updateWebIStats(webiServers);
+            renderWebIServers(webiServers);
+
             // Load Tomcat servers
             const tomcatServers = generateTomcatServersData();
 
@@ -1375,6 +1466,70 @@ For support: it-support@uchicago.edu`);
             };
 
             messageEl.textContent = statusMessages[status] || 'Status unknown';
+        }
+
+        // Update WebI overall status
+        function updateWebIOverallStatus(status, serverCount) {
+            const statusEl = document.getElementById('webiOverallStatus');
+            const messageEl = document.getElementById('webiStatusMessage');
+
+            statusEl.className = `status-indicator ${status.toLowerCase()}`;
+            statusEl.classList.remove('pulse');
+
+            const statusIcons = {
+                'UP': '✓',
+                'DOWN': '✗',
+                'DEGRADED': '⚠',
+                'UNKNOWN': '?'
+            };
+
+            statusEl.textContent = `${statusIcons[status]} ${status}`;
+
+            const statusMessages = {
+                'UP': `All ${serverCount} WebI Processing Servers are operational (aggregated from 4 nodes)`,
+                'DOWN': '⚠ Critical: One or more WebI servers are down',
+                'DEGRADED': '⚠ Warning: WebI is running with reduced capacity',
+                'UNKNOWN': 'Unable to determine WebI status - checking...'
+            };
+
+            messageEl.textContent = statusMessages[status] || 'Status unknown';
+        }
+
+        // Update WebI statistics
+        function updateWebIStats(servers) {
+            const totalServers = servers.length;
+            const upServers = servers.filter(n => n.status === 'UP').length;
+            const downServers = servers.filter(n => n.status === 'DOWN').length;
+
+            const responseTimes = servers
+                .filter(n => n.response_time_ms)
+                .map(n => n.response_time_ms);
+
+            const avgResponseTime = responseTimes.length > 0
+                ? Math.round(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length)
+                : 0;
+
+            document.getElementById('webiTotalServers').textContent = totalServers;
+            document.getElementById('webiUpServers').textContent = upServers;
+            document.getElementById('webiDownServers').textContent = downServers;
+            document.getElementById('webiAvgResponseTime').textContent =
+                avgResponseTime > 0 ? `${avgResponseTime}ms` : 'N/A';
+        }
+
+        // Render WebI servers
+        function renderWebIServers(servers) {
+            const container = document.getElementById('webiServersContainer');
+            container.innerHTML = '';
+
+            if (servers.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:white; font-size:1.2em;">No WebI servers found</p>';
+                return;
+            }
+
+            servers.forEach(server => {
+                const card = createNodeCard(server);
+                container.appendChild(card);
+            });
         }
 
         // Update Tomcat overall status
