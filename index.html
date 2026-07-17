@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orbit Server Status - University of Chicago</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #800000 0%, #500000 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #800000;
+            font-size: 3em;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .header .subtitle {
+            color: #666;
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .header .last-update {
+            margin-top: 20px;
+            color: #888;
+            font-size: 1em;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .overall-status {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .overall-status h2 {
+            color: #333;
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            padding: 20px 60px;
+            border-radius: 50px;
+            font-size: 2em;
+            font-weight: bold;
+            margin: 20px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .status-indicator.up {
+            background: #10b981;
+            color: white;
+        }
+
+        .status-indicator.down {
+            background: #ef4444;
+            color: white;
+        }
+
+        .status-indicator.degraded {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .status-indicator.unknown {
+            background: #6b7280;
+            color: white;
+        }
+
+        .status-message {
+            font-size: 1.2em;
+            color: #555;
+            margin-top: 15px;
+        }
+
+        .nodes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .node-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .node-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .node-header {
+            padding: 25px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-bottom: 3px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .node-name {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .node-status-badge {
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .node-status-badge.up {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .node-status-badge.down {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .node-status-badge.degraded {
+            background: #fed7aa;
+            color: #92400e;
+        }
+
+        .node-status-badge.unknown {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .node-body {
+            padding: 25px;
+        }
+
+        .node-metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #f3f4f6;
+            align-items: center;
+        }
+
+        .node-metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: #6b7280;
+            font-size: 1em;
+            font-weight: 500;
+        }
+
+        .metric-value {
+            color: #111827;
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+
+        .metric-value.good {
+            color: #10b981;
+        }
+
+        .metric-value.bad {
+            color: #ef4444;
+        }
+
+        .actions {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .btn {
+            padding: 16px 40px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            margin: 0 10px;
+        }
+
+        .btn-primary {
+            background: #800000;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #a00000;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #800000;
+            border: 2px solid #800000;
+        }
+
+        .btn-secondary:hover {
+            background: #800000;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #800000;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            padding: 30px;
+            font-size: 1em;
+            margin-top: 40px;
+        }
+
+        .footer a {
+            color: #ffd700;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .footer a:hover {
+            color: #ffed4e;
+            text-decoration: underline;
+        }
+
+        .footer .footer-links {
+            margin-top: 15px;
+        }
+
+        .footer .footer-links a {
+            margin: 0 15px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .nodes-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .btn {
+                display: block;
+                width: 100%;
+                margin: 10px 0;
+            }
+        }
+
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: 700;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .connection-status.connected {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .connection-status.disconnected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .connection-status.checking {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            min-width: 150px;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #800000;
+        }
+
+        .stat-label {
+            font-size: 1em;
+            color: #666;
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .alert-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .alert-box.show {
+            display: block;
+        }
+
+        .alert-box.error {
+            background: #fee2e2;
+            border-left-color: #ef4444;
+        }
+
+        .alert-box.success {
+            background: #d1fae5;
+            border-left-color: #10b981;
+        }
+    </style>
+</head>
+<body>
+    <div class="connection-status checking" id="connectionStatus">
+        <span class="loading"></span> Checking Connection...
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Orbit Server Status Dashboard</h1>
+            <p class="subtitle">University of Chicago - Real-Time Server Monitoring</p>
+            <div class="last-update" id="lastUpdate">
+                ⏱️ Initializing system check...
+            </div>
+        </div>
+
+        <div class="alert-box" id="alertBox"></div>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-value" id="totalNodes">-</div>
+                <div class="stat-label">Total Nodes</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="upNodes" style="color: #10b981;">-</div>
+                <div class="stat-label">Nodes Up</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="downNodes" style="color: #ef4444;">-</div>
+                <div class="stat-label">Nodes Down</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="avgResponseTime">-</div>
+                <div class="stat-label">Avg Response</div>
+            </div>
+        </div>
+
+        <div class="overall-status">
+            <h2>Overall System Status</h2>
+            <div class="status-indicator unknown pulse" id="overallStatus">
+                CHECKING...
+            </div>
+            <p class="status-message" id="statusMessage">Initializing system check...</p>
+        </div>
+
+        <div class="nodes-grid" id="nodesContainer">
+            <!-- Nodes will be populated here -->
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" id="refreshBtn" onclick="refreshStatus()">
+                🔄 Refresh Status Now
+            </button>
+            <button class="btn btn-secondary" onclick="window.open('https://orbitreporting.uchicago.edu', '_blank')">
+                🔗 Open Orbit Application
+            </button>
+        </div>
+
+        <div class="footer">
+            <p><strong>Orbit Status Portal</strong> | Monitoring Interval: 5 minutes | Auto-refresh enabled</p>
+            <div class="footer-links">
+                <a href="https://orbitreporting.uchicago.edu" target="_blank">Orbit Application</a>
+                <a href="mailto:it-support@uchicago.edu">IT Support</a>
+                <a href="#" onclick="showHelp(); return false;">Help</a>
+            </div>
+            <p style="margin-top: 15px; font-size: 0.9em;">© 2026 University of Chicago | All Rights Reserved</p>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:5000'
+            : window.location.origin;
+
+        let useBackend = true;
+        let refreshInterval;
+
+        // Check if backend is available
+        async function checkBackendConnection() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/status`, {
+                    method: 'GET',
+                    timeout: 5000
+                });
+                return response.ok;
+            } catch (error) {
+                console.log('Backend not available, using demo mode');
+                return false;
+            }
+        }
+
+        // Update connection status indicator
+        function updateConnectionStatus(status, message) {
+            const statusEl = document.getElementById('connectionStatus');
+            statusEl.className = `connection-status ${status}`;
+
+            const icons = {
+                'connected': '✓',
+                'disconnected': '✗',
+                'checking': '⏳'
+            };
+
+            statusEl.innerHTML = `${icons[status] || ''} ${message}`;
+        }
+
+        // Load status from backend
+        async function loadStatusFromBackend() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/status`);
+                const data = await response.json();
+
+                updateConnectionStatus('connected', 'Connected to Server');
+                updateOverallStatus(data.overall_status, data.nodes.length);
+                updateStats(data.nodes);
+                renderNodes(data.nodes);
+
+                document.getElementById('lastUpdate').innerHTML =
+                    `⏱️ Last Updated: ${new Date().toLocaleString()}`;
+
+                return true;
+            } catch (error) {
+                console.error('Error loading status:', error);
+                return false;
+            }
+        }
+
+        // Generate demo data
+        function generateDemoData() {
+            const nodeCount = 5;
+            const nodes = [];
+
+            for (let i = 1; i <= nodeCount; i++) {
+                const statuses = ['UP', 'UP', 'UP', 'UP', 'DOWN', 'DEGRADED'];
+                const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+
+                nodes.push({
+                    node_name: `Orbit Node ${i}`,
+                    status: randomStatus,
+                    response_time_ms: randomStatus === 'UP' ? Math.floor(Math.random() * 500) + 100 : null,
+                    last_check_at: new Date().toISOString(),
+                    last_up_at: new Date(Date.now() - Math.random() * 3600000).toISOString(),
+                    consecutive_failures: randomStatus !== 'UP' ? Math.floor(Math.random() * 3) : 0
+                });
+            }
+
+            return nodes;
+        }
+
+        // Load demo data
+        function loadDemoData() {
+            updateConnectionStatus('disconnected', 'Demo Mode (Backend Offline)');
+            showAlert('Running in Demo Mode - Connect to backend for live data', 'error');
+
+            const nodes = generateDemoData();
+
+            const allUp = nodes.every(n => n.status === 'UP');
+            const anyDown = nodes.some(n => n.status === 'DOWN');
+
+            let overallStatus;
+            if (allUp) overallStatus = 'UP';
+            else if (anyDown) overallStatus = 'DOWN';
+            else overallStatus = 'DEGRADED';
+
+            updateOverallStatus(overallStatus, nodes.length);
+            updateStats(nodes);
+            renderNodes(nodes);
+
+            document.getElementById('lastUpdate').innerHTML =
+                `⏱️ Demo Data Generated: ${new Date().toLocaleString()}`;
+        }
+
+        // Main load function
+        async function loadStatus() {
+            const backendConnected = await checkBackendConnection();
+
+            if (backendConnected) {
+                useBackend = true;
+                await loadStatusFromBackend();
+            } else {
+                useBackend = false;
+                loadDemoData();
+            }
+        }
+
+        // Update statistics bar
+        function updateStats(nodes) {
+            const totalNodes = nodes.length;
+            const upNodes = nodes.filter(n => n.status === 'UP').length;
+            const downNodes = nodes.filter(n => n.status === 'DOWN').length;
+
+            const responseTimes = nodes
+                .filter(n => n.response_time_ms)
+                .map(n => n.response_time_ms);
+
+            const avgResponseTime = responseTimes.length > 0
+                ? Math.round(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length)
+                : 0;
+
+            document.getElementById('totalNodes').textContent = totalNodes;
+            document.getElementById('upNodes').textContent = upNodes;
+            document.getElementById('downNodes').textContent = downNodes;
+            document.getElementById('avgResponseTime').textContent =
+                avgResponseTime > 0 ? `${avgResponseTime}ms` : 'N/A';
+        }
+
+        // Update overall status
+        function updateOverallStatus(status, nodeCount) {
+            const statusEl = document.getElementById('overallStatus');
+            const messageEl = document.getElementById('statusMessage');
+
+            statusEl.className = `status-indicator ${status.toLowerCase()}`;
+            statusEl.classList.remove('pulse');
+
+            const statusIcons = {
+                'UP': '✓',
+                'DOWN': '✗',
+                'DEGRADED': '⚠',
+                'UNKNOWN': '?'
+            };
+
+            statusEl.textContent = `${statusIcons[status]} ${status}`;
+
+            const statusMessages = {
+                'UP': `All ${nodeCount} nodes are operational and running smoothly`,
+                'DOWN': '⚠ Critical: One or more nodes are down - immediate attention required',
+                'DEGRADED': '⚠ Warning: System is running with reduced capacity',
+                'UNKNOWN': 'Unable to determine system status - checking...'
+            };
+
+            messageEl.textContent = statusMessages[status] || 'Status unknown';
+        }
+
+        // Render nodes
+        function renderNodes(nodes) {
+            const container = document.getElementById('nodesContainer');
+            container.innerHTML = '';
+
+            if (nodes.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:white; font-size:1.2em;">No nodes found</p>';
+                return;
+            }
+
+            nodes.forEach(node => {
+                const card = createNodeCard(node);
+                container.appendChild(card);
+            });
+        }
+
+        // Create node card
+        function createNodeCard(node) {
+            const card = document.createElement('div');
+            card.className = 'node-card';
+
+            const statusClass = node.status.toLowerCase();
+            const statusIcon = {
+                'up': '✓',
+                'down': '✗',
+                'degraded': '⚠',
+                'unknown': '?'
+            }[statusClass] || '?';
+
+            const responseTime = node.response_time_ms
+                ? `${node.response_time_ms}ms`
+                : 'N/A';
+
+            const responseClass = node.response_time_ms && node.response_time_ms < 500 ? 'good' : 'bad';
+
+            const lastCheck = node.last_check_at
+                ? formatRelativeTime(node.last_check_at)
+                : 'Never';
+
+            const lastUp = node.last_up_at
+                ? formatRelativeTime(node.last_up_at)
+                : 'Never';
+
+            const failureClass = node.consecutive_failures > 0 ? 'bad' : 'good';
+
+            card.innerHTML = `
+                <div class="node-header">
+                    <div class="node-name">🖥️ ${node.node_name}</div>
+                    <div class="node-status-badge ${statusClass}">
+                        ${statusIcon} ${node.status}
+                    </div>
+                </div>
+                <div class="node-body">
+                    <div class="node-metric">
+                        <span class="metric-label">⚡ Response Time:</span>
+                        <span class="metric-value ${responseClass}">${responseTime}</span>
+                    </div>
+                    <div class="node-metric">
+                        <span class="metric-label">🕐 Last Check:</span>
+                        <span class="metric-value">${lastCheck}</span>
+                    </div>
+                    <div class="node-metric">
+                        <span class="metric-label">✅ Last Up:</span>
+                        <span class="metric-value">${lastUp}</span>
+                    </div>
+                    <div class="node-metric">
+                        <span class="metric-label">❌ Consecutive Failures:</span>
+                        <span class="metric-value ${failureClass}">${node.consecutive_failures}</span>
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        // Format relative time
+        function formatRelativeTime(timestamp) {
+            const now = new Date();
+            const then = new Date(timestamp);
+            const diffMs = now - then;
+            const diffSec = Math.floor(diffMs / 1000);
+            const diffMin = Math.floor(diffSec / 60);
+            const diffHour = Math.floor(diffMin / 60);
+            const diffDay = Math.floor(diffHour / 24);
+
+            if (diffSec < 60) return `${diffSec}s ago`;
+            if (diffMin < 60) return `${diffMin}m ago`;
+            if (diffHour < 24) return `${diffHour}h ago`;
+            return `${diffDay}d ago`;
+        }
+
+        // Refresh status
+        async function refreshStatus() {
+            const btn = document.getElementById('refreshBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Refreshing...';
+
+            if (useBackend) {
+                try {
+                    await fetch(`${API_BASE_URL}/api/refresh`, { method: 'POST' });
+                    setTimeout(async () => {
+                        await loadStatus();
+                        btn.disabled = false;
+                        btn.innerHTML = '🔄 Refresh Status Now';
+                        showAlert('Status refreshed successfully', 'success');
+                    }, 2000);
+                } catch (error) {
+                    console.error('Error refreshing:', error);
+                    btn.disabled = false;
+                    btn.innerHTML = '🔄 Refresh Status Now';
+                    showAlert('Failed to refresh status', 'error');
+                }
+            } else {
+                setTimeout(() => {
+                    loadDemoData();
+                    btn.disabled = false;
+                    btn.innerHTML = '🔄 Refresh Status Now';
+                    showAlert('Demo data regenerated', 'success');
+                }, 1000);
+            }
+        }
+
+        // Show alert
+        function showAlert(message, type = 'error') {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.className = `alert-box ${type} show`;
+            alertBox.innerHTML = `<strong>${type === 'error' ? '⚠️ Warning' : '✓ Success'}:</strong> ${message}`;
+
+            setTimeout(() => {
+                alertBox.classList.remove('show');
+            }, 5000);
+        }
+
+        // Show help
+        function showHelp() {
+            alert(`Orbit Status Portal - Help
+
+This dashboard monitors Orbit server nodes in real-time.
+
+Status Indicators:
+✓ UP - Node is operational
+✗ DOWN - Node is not responding
+⚠ DEGRADED - Node has issues
+? UNKNOWN - Status cannot be determined
+
+Features:
+• Auto-refresh every 5 minutes
+• Manual refresh button
+• Real-time connection status
+• Response time tracking
+• Failure counting
+
+For support: it-support@uchicago.edu`);
+        }
+
+        // Initialize
+        loadStatus();
+
+        // Auto-refresh every 5 minutes
+        refreshInterval = setInterval(loadStatus, 300000);
+
+        // Refresh on visibility change
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                loadStatus();
+            }
+        });
+    </script>
+</body>
+</html>
