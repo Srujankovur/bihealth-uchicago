@@ -585,6 +585,41 @@
                 </div>
             </div>
 
+            <!-- WebIntelligence Processing Servers Section (Compact View) -->
+            <div style="border-top: 3px solid rgba(255,255,255,0.3); padding-top: 40px; margin-bottom: 40px;">
+                <div class="overall-status">
+                    <h2>WebIntelligence Processing Servers</h2>
+                    <div class="status-indicator unknown pulse" id="webiOverallStatus">
+                        CHECKING...
+                    </div>
+                    <p class="status-message" id="webiStatusMessage">Aggregated from all SAP BO nodes...</p>
+                </div>
+
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <div class="stat-value" id="webiTotalServers">-</div>
+                        <div class="stat-label">Total WebI Servers</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="webiUpServers" style="color: #10b981;">-</div>
+                        <div class="stat-label">WebI Up</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="webiDownServers" style="color: #ef4444;">-</div>
+                        <div class="stat-label">WebI Down</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="webiAvgResponseTime">-</div>
+                        <div class="stat-label">Avg Response</div>
+                    </div>
+                </div>
+
+                <!-- Compact Grid for WebI Servers (4 columns showing each server group) -->
+                <div class="nodes-grid" id="webiServersContainer">
+                    <!-- WebI servers will be populated here -->
+                </div>
+            </div>
+
             <!-- Central Management Servers Section -->
             <div style="border-top: 3px solid rgba(255,255,255,0.3); padding-top: 40px; margin-bottom: 40px;">
                 <div class="overall-status">
@@ -616,40 +651,6 @@
 
                 <div class="nodes-grid" id="cmsServersContainer">
                     <!-- CMS servers will be populated here -->
-                </div>
-            </div>
-
-            <!-- WebIntelligence Processing Servers Section -->
-            <div style="border-top: 3px solid rgba(255,255,255,0.3); padding-top: 40px; margin-bottom: 40px;">
-                <div class="overall-status">
-                    <h2>WebIntelligence Processing Servers</h2>
-                    <div class="status-indicator unknown pulse" id="webiOverallStatus">
-                        CHECKING...
-                    </div>
-                    <p class="status-message" id="webiStatusMessage">Aggregated from all SAP BO nodes...</p>
-                </div>
-
-                <div class="stats-bar">
-                    <div class="stat-item">
-                        <div class="stat-value" id="webiTotalServers">-</div>
-                        <div class="stat-label">Total WebI Servers</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="webiUpServers" style="color: #10b981;">-</div>
-                        <div class="stat-label">WebI Up</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="webiDownServers" style="color: #ef4444;">-</div>
-                        <div class="stat-label">WebI Down</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="webiAvgResponseTime">-</div>
-                        <div class="stat-label">Avg Response</div>
-                    </div>
-                </div>
-
-                <div class="nodes-grid" id="webiServersContainer">
-                    <!-- WebI servers will be populated here -->
                 </div>
             </div>
 
@@ -1139,33 +1140,32 @@ For support: it-support@uchicago.edu`);
             return servers;
         }
 
-        // Generate WebIntelligence Processing Servers data (aggregated from all 4 nodes)
+        // Generate WebIntelligence Processing Servers data (16 total from BISPRDREP5-8)
         function generateWebIServersData() {
-            // Each SAP BO node has multiple WebI processing servers (both types)
             const webiServers = [
-                // Node 1 WebI servers
-                { name: 'WebIntelligenceProcessingServer1 (Node 1)', node: 1, status: 'UP', responseTime: 178 },
-                { name: 'WebIntelligenceProcessingServer2 (Node 1)', node: 1, status: 'UP', responseTime: 165 },
-                { name: 'WebIntelligenceProcessingServer3 (Node 1)', node: 1, status: 'UP', responseTime: 192 },
-                { name: 'WebiIntelligenceProcessingServer1 (Node 1)', node: 1, status: 'UP', responseTime: 183 },
+                // BISPRDREP5 servers
+                { name: 'BISPRDREP5.WebIntelligenceProcessingServer', server: 'BISPRDREP5', status: 'UP', responseTime: 178 },
+                { name: 'BISPRDREP5.WebIntelligenceProcessingServer1', server: 'BISPRDREP5', status: 'UP', responseTime: 165 },
+                { name: 'BISPRDREP5.WebIntelligenceProcessingServer2', server: 'BISPRDREP5', status: 'UP', responseTime: 192 },
+                { name: 'BISPRDREP5.WebIntelligenceProcessingServer3', server: 'BISPRDREP5', status: 'UP', responseTime: 183 },
 
-                // Node 2 WebI servers
-                { name: 'WebIntelligenceProcessingServer1 (Node 2)', node: 2, status: 'UP', responseTime: 156 },
-                { name: 'WebIntelligenceProcessingServer2 (Node 2)', node: 2, status: 'UP', responseTime: 188 },
-                { name: 'WebIntelligenceProcessingServer3 (Node 2)', node: 2, status: 'UP', responseTime: 201 },
-                { name: 'WebiIntelligenceProcessingServer1 (Node 2)', node: 2, status: 'UP', responseTime: 175 },
+                // BISPRDREP6 servers
+                { name: 'BISPRDREP6.WebIntelligenceProcessingServer', server: 'BISPRDREP6', status: 'UP', responseTime: 156 },
+                { name: 'BISPRDREP6.WebIntelligenceProcessingServer1', server: 'BISPRDREP6', status: 'UP', responseTime: 188 },
+                { name: 'BISPRDREP6.WebIntelligenceProcessingServer2', server: 'BISPRDREP6', status: 'UP', responseTime: 201 },
+                { name: 'BISPRDREP6.WebIntelligenceProcessingServer3', server: 'BISPRDREP6', status: 'UP', responseTime: 175 },
 
-                // Node 3 WebI servers
-                { name: 'WebIntelligenceProcessingServer1 (Node 3)', node: 3, status: 'UP', responseTime: 143 },
-                { name: 'WebIntelligenceProcessingServer2 (Node 3)', node: 3, status: 'UP', responseTime: 177 },
-                { name: 'WebIntelligenceProcessingServer3 (Node 3)', node: 3, status: 'UP', responseTime: 195 },
-                { name: 'WebiIntelligenceProcessingServer1 (Node 3)', node: 3, status: 'UP', responseTime: 168 },
+                // BISPRDREP7 servers
+                { name: 'BISPRDREP7.WebIntelligenceProcessingServer', server: 'BISPRDREP7', status: 'UP', responseTime: 143 },
+                { name: 'BISPRDREP7.WebIntelligenceProcessingServer1', server: 'BISPRDREP7', status: 'UP', responseTime: 177 },
+                { name: 'BISPRDREP7.WebIntelligenceProcessingServer2', server: 'BISPRDREP7', status: 'UP', responseTime: 195 },
+                { name: 'BISPRDREP7.WebIntelligenceProcessingServer3', server: 'BISPRDREP7', status: 'UP', responseTime: 168 },
 
-                // Node 4 WebI servers
-                { name: 'WebIntelligenceProcessingServer1 (Node 4)', node: 4, status: 'UP', responseTime: 168 },
-                { name: 'WebIntelligenceProcessingServer2 (Node 4)', node: 4, status: 'UP', responseTime: 182 },
-                { name: 'WebIntelligenceProcessingServer3 (Node 4)', node: 4, status: 'UP', responseTime: 159 },
-                { name: 'WebiIntelligenceProcessingServer1 (Node 4)', node: 4, status: 'UP', responseTime: 191 }
+                // BISPRDREP8 servers
+                { name: 'BISPRDREP8.WebIntelligenceProcessingServer', server: 'BISPRDREP8', status: 'UP', responseTime: 168 },
+                { name: 'BISPRDREP8.WebIntelligenceProcessingServer1', server: 'BISPRDREP8', status: 'UP', responseTime: 182 },
+                { name: 'BISPRDREP8.WebIntelligenceProcessingServer2', server: 'BISPRDREP8', status: 'UP', responseTime: 159 },
+                { name: 'BISPRDREP8.WebIntelligenceProcessingServer3', server: 'BISPRDREP8', status: 'UP', responseTime: 191 }
             ];
 
             const servers = [];
@@ -1178,7 +1178,7 @@ For support: it-support@uchicago.edu`);
                     last_check_at: new Date().toISOString(),
                     last_up_at: new Date().toISOString(),
                     consecutive_failures: 0,
-                    source_node: server.node
+                    source_server: server.server
                 });
             });
 
@@ -1743,7 +1743,7 @@ For support: it-support@uchicago.edu`);
                 avgResponseTime > 0 ? `${avgResponseTime}ms` : 'N/A';
         }
 
-        // Render WebI servers
+        // Render WebI servers (grouped by server - compact view like Tableau Backgrounders)
         function renderWebIServers(servers) {
             const container = document.getElementById('webiServersContainer');
             container.innerHTML = '';
@@ -1753,10 +1753,83 @@ For support: it-support@uchicago.edu`);
                 return;
             }
 
-            servers.forEach(server => {
-                const card = createNodeCard(server);
-                container.appendChild(card);
+            // Group servers by source server (BISPRDREP5, BISPRDREP6, BISPRDREP7, BISPRDREP8)
+            const groupedServers = {
+                'BISPRDREP5': servers.filter(s => s.source_server === 'BISPRDREP5'),
+                'BISPRDREP6': servers.filter(s => s.source_server === 'BISPRDREP6'),
+                'BISPRDREP7': servers.filter(s => s.source_server === 'BISPRDREP7'),
+                'BISPRDREP8': servers.filter(s => s.source_server === 'BISPRDREP8')
+            };
+
+            // Create a card for each server group
+            Object.keys(groupedServers).forEach(serverName => {
+                const groupServers = groupedServers[serverName];
+                if (groupServers.length > 0) {
+                    const card = createWebIGroupCard(serverName, groupServers);
+                    container.appendChild(card);
+                }
             });
+        }
+
+        // Create WebI group card (similar to Tableau service cards)
+        function createWebIGroupCard(serverName, servers) {
+            const card = document.createElement('div');
+            card.className = 'node-card';
+
+            const totalServers = servers.length;
+            const upServers = servers.filter(s => s.status === 'UP').length;
+            const downServers = servers.filter(s => s.status === 'DOWN').length;
+
+            const overallStatus = upServers === totalServers ? 'UP' : (downServers === totalServers ? 'DOWN' : 'DEGRADED');
+            const statusClass = overallStatus.toLowerCase();
+            const statusIcon = {
+                'up': '✓',
+                'down': '✗',
+                'degraded': '⚠'
+            }[statusClass];
+
+            const avgResponseTime = servers.length > 0
+                ? Math.round(servers.reduce((sum, s) => sum + (s.response_time_ms || 0), 0) / servers.length)
+                : 0;
+
+            // Instance status bar
+            const instanceBar = `
+                <div class="node-metric" style="border-bottom: 2px solid #e5e7eb; padding-bottom: 15px; margin-bottom: 15px;">
+                    <span class="metric-label" style="font-size: 0.85em; color: #6b7280;">📊 WebI Instances:</span>
+                    <span class="metric-value" style="font-size: 1em;">
+                        <span style="color: #10b981; font-weight: 700;">${upServers} UP</span>
+                        ${downServers > 0 ? `<span style="color: #ef4444; font-weight: 700;"> / ${downServers} DOWN</span>` : ''}
+                        <span style="color: #6b7280;"> / ${totalServers} Total</span>
+                    </span>
+                </div>
+            `;
+
+            card.innerHTML = `
+                <div class="node-header">
+                    <div class="node-name" style="font-size: 1.2em;">🖥️ ${serverName}</div>
+                    <div class="node-status-badge ${statusClass}">
+                        ${statusIcon} ${overallStatus}
+                    </div>
+                </div>
+                <div class="node-body">
+                    ${instanceBar}
+                    <div class="node-metric">
+                        <span class="metric-label">⚡ Avg Response Time:</span>
+                        <span class="metric-value ${avgResponseTime < 500 ? 'good' : 'bad'}">${avgResponseTime}ms</span>
+                    </div>
+                    <div class="node-metric">
+                        <span class="metric-label">🕐 Last Check:</span>
+                        <span class="metric-value">${formatRelativeTime(servers[0].last_check_at)}</span>
+                    </div>
+                    <div style="padding: 12px; background: #f9fafb; border-radius: 8px; margin-top: 10px;">
+                        <span style="font-size: 0.85em; color: #6b7280; line-height: 1.4;">
+                            WebIntelligence Processing Server - Processes report requests and queries
+                        </span>
+                    </div>
+                </div>
+            `;
+
+            return card;
         }
 
         // Update AJS overall status
