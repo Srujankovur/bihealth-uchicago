@@ -509,15 +509,15 @@
             <div class="stats-bar">
                 <div class="stat-item">
                     <div class="stat-value" id="tableauTotalNodes">-</div>
-                    <div class="stat-label">Total Services</div>
+                    <div class="stat-label">Total Nodes</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-value" id="tableauUpNodes" style="color: #10b981;">-</div>
-                    <div class="stat-label">Services Up</div>
+                    <div class="stat-label">Nodes Up</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-value" id="tableauDownNodes" style="color: #ef4444;">-</div>
-                    <div class="stat-label">Services Down</div>
+                    <div class="stat-label">Nodes Down</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-value" id="tableauAvgResponseTime">-</div>
@@ -907,26 +907,21 @@ For support: it-support@uchicago.edu`);
             }
         }
 
-        // Generate Tableau demo data
+        // Generate Tableau demo data - matches actual Tableau configuration
         function generateTableauData() {
-            const tableauServices = [
-                { name: 'Gateway', type: 'gateway', status: 'UP', responseTime: 125 },
-                { name: 'Application Server', type: 'app', status: 'UP', responseTime: 234 },
-                { name: 'VizQL Server', type: 'vizql', status: 'UP', responseTime: 189 },
-                { name: 'Data Server', type: 'data', status: 'UP', responseTime: 156 },
-                { name: 'Repository', type: 'repository', status: 'UP', responseTime: 98 },
-                { name: 'Cache Server', type: 'cache', status: 'UP', responseTime: 67 },
-                { name: 'Backgrounder', type: 'backgrounder', status: 'UP', responseTime: 145 },
-                { name: 'File Store', type: 'filestore', status: 'UP', responseTime: 112 }
+            const tableauNodes = [
+                { name: 'Tableau Server Node 1', type: 'primary', status: 'UP', responseTime: 145 },
+                { name: 'Tableau Server Node 2', type: 'worker', status: 'UP', responseTime: 178 },
+                { name: 'Tableau Server Node 3', type: 'worker', status: 'UP', responseTime: 162 }
             ];
 
             const services = [];
 
-            tableauServices.forEach(service => {
+            tableauNodes.forEach(node => {
                 services.push({
-                    node_name: service.name,
-                    status: service.status,
-                    response_time_ms: service.responseTime,
+                    node_name: node.name,
+                    status: node.status,
+                    response_time_ms: node.responseTime,
                     last_check_at: new Date().toISOString(),
                     last_up_at: new Date().toISOString(),
                     consecutive_failures: 0
@@ -995,8 +990,8 @@ For support: it-support@uchicago.edu`);
             statusEl.textContent = `${statusIcons[status]} ${status}`;
 
             const statusMessages = {
-                'UP': `All ${nodeCount} Tableau services are operational and running smoothly`,
-                'DOWN': '⚠ Critical: One or more Tableau services are down',
+                'UP': `All ${nodeCount} Tableau nodes are operational and running smoothly`,
+                'DOWN': '⚠ Critical: One or more Tableau nodes are down',
                 'DEGRADED': '⚠ Warning: Tableau is running with reduced capacity',
                 'UNKNOWN': 'Unable to determine Tableau status - checking...'
             };
@@ -1010,7 +1005,7 @@ For support: it-support@uchicago.edu`);
             container.innerHTML = '';
 
             if (services.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:white; font-size:1.2em;">No services found</p>';
+                container.innerHTML = '<p style="text-align:center; color:white; font-size:1.2em;">No nodes found</p>';
                 return;
             }
 
