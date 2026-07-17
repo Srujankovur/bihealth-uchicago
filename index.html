@@ -570,35 +570,53 @@
 
         <!-- SAP BO Tab Content -->
         <div class="tab-content" id="sapboContent">
-            <div class="overall-status">
-                <h2>SAP BusinessObjects Server Status</h2>
-                <div class="status-indicator unknown pulse" id="sapboOverallStatus">
-                    CHECKING...
+            <!-- SAP BO Servers Section -->
+            <div style="margin-bottom: 40px;">
+                <div class="overall-status">
+                    <h2>SAP BusinessObjects Server Nodes</h2>
+                    <div class="status-indicator unknown pulse" id="sapboOverallStatus">
+                        CHECKING...
+                    </div>
+                    <p class="status-message" id="sapboStatusMessage">Initializing system check...</p>
                 </div>
-                <p class="status-message" id="sapboStatusMessage">Initializing system check...</p>
-            </div>
 
-            <div class="stats-bar">
-                <div class="stat-item">
-                    <div class="stat-value" id="sapboTotalNodes">-</div>
-                    <div class="stat-label">Total Nodes</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="sapboUpNodes" style="color: #10b981;">-</div>
-                    <div class="stat-label">Nodes Up</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="sapboDownNodes" style="color: #ef4444;">-</div>
-                    <div class="stat-label">Nodes Down</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="sapboAvgResponseTime">-</div>
-                    <div class="stat-label">Avg Response</div>
+                <div class="nodes-grid" id="sapboNodesContainer">
+                    <!-- SAP BO nodes will be populated here -->
                 </div>
             </div>
 
-            <div class="nodes-grid" id="sapboNodesContainer">
-                <!-- SAP BO nodes will be populated here -->
+            <!-- Tomcat Servers Section -->
+            <div style="border-top: 3px solid rgba(255,255,255,0.3); padding-top: 40px;">
+                <div class="overall-status">
+                    <h2>SAP BO Tomcat Servers Status</h2>
+                    <div class="status-indicator unknown pulse" id="tomcatOverallStatus">
+                        CHECKING...
+                    </div>
+                    <p class="status-message" id="tomcatStatusMessage">Initializing Tomcat check...</p>
+                </div>
+
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <div class="stat-value" id="tomcatTotalNodes">-</div>
+                        <div class="stat-label">Total Tomcat</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="tomcatUpNodes" style="color: #10b981;">-</div>
+                        <div class="stat-label">Tomcat Up</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="tomcatDownNodes" style="color: #ef4444;">-</div>
+                        <div class="stat-label">Tomcat Down</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="tomcatAvgResponseTime">-</div>
+                        <div class="stat-label">Avg Response</div>
+                    </div>
+                </div>
+
+                <div class="nodes-grid" id="tomcatNodesContainer">
+                    <!-- Tomcat nodes will be populated here -->
+                </div>
             </div>
 
             <div class="actions">
@@ -1000,6 +1018,31 @@ For support: it-support@uchicago.edu`);
             return nodes;
         }
 
+        // Generate Tomcat servers data
+        function generateTomcatServersData() {
+            const tomcatServers = [
+                { name: 'Tomcat Server 5 (bisprdtcat5)', url: 'https://bisprdtcat5/', status: 'UP', responseTime: 167 },
+                { name: 'Tomcat Server 6 (bisprdtcat6)', url: 'https://bisprdtcat6/', status: 'UP', responseTime: 189 },
+                { name: 'Tomcat Server 7 (bisprdtcat7)', url: 'https://bisprdtcat7/', status: 'UP', responseTime: 145 }
+            ];
+
+            const servers = [];
+
+            tomcatServers.forEach(server => {
+                servers.push({
+                    node_name: server.name,
+                    status: server.status,
+                    response_time_ms: server.responseTime,
+                    last_check_at: new Date().toISOString(),
+                    last_up_at: new Date().toISOString(),
+                    consecutive_failures: 0,
+                    url: server.url
+                });
+            });
+
+            return servers;
+        }
+
         // Generate Tableau nodes data
         function generateTableauNodesData() {
             const tableauNodes = [
@@ -1279,19 +1322,34 @@ For support: it-support@uchicago.edu`);
 
         // Load SAP BO status
         function loadSAPBOStatus() {
+            // Load SAP BO nodes
             const nodes = generateSAPBONodesData();
 
-            const allUp = nodes.every(n => n.status === 'UP');
-            const anyDown = nodes.some(n => n.status === 'DOWN');
+            const allNodesUp = nodes.every(n => n.status === 'UP');
+            const anyNodeDown = nodes.some(n => n.status === 'DOWN');
 
-            let overallStatus;
-            if (allUp) overallStatus = 'UP';
-            else if (anyDown) overallStatus = 'DOWN';
-            else overallStatus = 'DEGRADED';
+            let nodesOverallStatus;
+            if (allNodesUp) nodesOverallStatus = 'UP';
+            else if (anyNodeDown) nodesOverallStatus = 'DOWN';
+            else nodesOverallStatus = 'DEGRADED';
 
-            updateSAPBOOverallStatus(overallStatus, nodes.length);
-            updateSAPBOStats(nodes);
+            updateSAPBOOverallStatus(nodesOverallStatus, nodes.length);
             renderSAPBONodes(nodes);
+
+            // Load Tomcat servers
+            const tomcatServers = generateTomcatServersData();
+
+            const allTomcatUp = tomcatServers.every(n => n.status === 'UP');
+            const anyTomcatDown = tomcatServers.some(n => n.status === 'DOWN');
+
+            let tomcatOverallStatus;
+            if (allTomcatUp) tomcatOverallStatus = 'UP';
+            else if (anyTomcatDown) tomcatOverallStatus = 'DOWN';
+            else tomcatOverallStatus = 'DEGRADED';
+
+            updateTomcatOverallStatus(tomcatOverallStatus, tomcatServers.length);
+            updateTomcatStats(tomcatServers);
+            renderTomcatNodes(tomcatServers);
 
             document.getElementById('lastUpdate').innerHTML =
                 `⏱️ Last Updated: ${new Date().toLocaleString()} | SAP BusinessObjects`;
@@ -1324,13 +1382,40 @@ For support: it-support@uchicago.edu`);
             messageEl.textContent = statusMessages[status] || 'Status unknown';
         }
 
-        // Update SAP BO statistics
-        function updateSAPBOStats(nodes) {
-            const totalNodes = nodes.length;
-            const upNodes = nodes.filter(n => n.status === 'UP').length;
-            const downNodes = nodes.filter(n => n.status === 'DOWN').length;
+        // Update Tomcat overall status
+        function updateTomcatOverallStatus(status, nodeCount) {
+            const statusEl = document.getElementById('tomcatOverallStatus');
+            const messageEl = document.getElementById('tomcatStatusMessage');
 
-            const responseTimes = nodes
+            statusEl.className = `status-indicator ${status.toLowerCase()}`;
+            statusEl.classList.remove('pulse');
+
+            const statusIcons = {
+                'UP': '✓',
+                'DOWN': '✗',
+                'DEGRADED': '⚠',
+                'UNKNOWN': '?'
+            };
+
+            statusEl.textContent = `${statusIcons[status]} ${status}`;
+
+            const statusMessages = {
+                'UP': `All ${nodeCount} Tomcat servers are operational and running smoothly`,
+                'DOWN': '⚠ Critical: One or more Tomcat servers are down',
+                'DEGRADED': '⚠ Warning: Tomcat is running with reduced capacity',
+                'UNKNOWN': 'Unable to determine Tomcat status - checking...'
+            };
+
+            messageEl.textContent = statusMessages[status] || 'Status unknown';
+        }
+
+        // Update Tomcat statistics
+        function updateTomcatStats(servers) {
+            const totalNodes = servers.length;
+            const upNodes = servers.filter(n => n.status === 'UP').length;
+            const downNodes = servers.filter(n => n.status === 'DOWN').length;
+
+            const responseTimes = servers
                 .filter(n => n.response_time_ms)
                 .map(n => n.response_time_ms);
 
@@ -1338,11 +1423,27 @@ For support: it-support@uchicago.edu`);
                 ? Math.round(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length)
                 : 0;
 
-            document.getElementById('sapboTotalNodes').textContent = totalNodes;
-            document.getElementById('sapboUpNodes').textContent = upNodes;
-            document.getElementById('sapboDownNodes').textContent = downNodes;
-            document.getElementById('sapboAvgResponseTime').textContent =
+            document.getElementById('tomcatTotalNodes').textContent = totalNodes;
+            document.getElementById('tomcatUpNodes').textContent = upNodes;
+            document.getElementById('tomcatDownNodes').textContent = downNodes;
+            document.getElementById('tomcatAvgResponseTime').textContent =
                 avgResponseTime > 0 ? `${avgResponseTime}ms` : 'N/A';
+        }
+
+        // Render Tomcat nodes
+        function renderTomcatNodes(servers) {
+            const container = document.getElementById('tomcatNodesContainer');
+            container.innerHTML = '';
+
+            if (servers.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:white; font-size:1.2em;">No servers found</p>';
+                return;
+            }
+
+            servers.forEach(server => {
+                const card = createNodeCard(server);
+                container.appendChild(card);
+            });
         }
 
         // Render SAP BO nodes
