@@ -506,35 +506,53 @@
 
         <!-- Tableau Tab Content -->
         <div class="tab-content" id="tableauContent">
-            <div class="stats-bar">
-                <div class="stat-item">
-                    <div class="stat-value" id="tableauTotalNodes">-</div>
-                    <div class="stat-label">Total Services</div>
+            <!-- Nodes Section -->
+            <div style="margin-bottom: 40px;">
+                <div class="overall-status">
+                    <h2>Tableau Server Nodes</h2>
+                    <div class="status-indicator unknown pulse" id="tableauNodesOverallStatus">
+                        CHECKING...
+                    </div>
+                    <p class="status-message" id="tableauNodesStatusMessage">Initializing nodes check...</p>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="tableauUpNodes" style="color: #10b981;">-</div>
-                    <div class="stat-label">Services Up</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="tableauDownNodes" style="color: #ef4444;">-</div>
-                    <div class="stat-label">Services Down</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="tableauAvgResponseTime">-</div>
-                    <div class="stat-label">Avg Response</div>
+
+                <div class="nodes-grid" id="tableauServerNodesContainer">
+                    <!-- Tableau server nodes will be populated here -->
                 </div>
             </div>
 
-            <div class="overall-status">
-                <h2>Tableau Server Status</h2>
-                <div class="status-indicator unknown pulse" id="tableauOverallStatus">
-                    CHECKING...
+            <!-- Services Section -->
+            <div style="border-top: 3px solid rgba(255,255,255,0.3); padding-top: 40px;">
+                <div class="overall-status">
+                    <h2>Tableau Services Status</h2>
+                    <div class="status-indicator unknown pulse" id="tableauOverallStatus">
+                        CHECKING...
+                    </div>
+                    <p class="status-message" id="tableauStatusMessage">Initializing services check...</p>
                 </div>
-                <p class="status-message" id="tableauStatusMessage">Initializing system check...</p>
-            </div>
 
-            <div class="nodes-grid" id="tableauNodesContainer">
-                <!-- Tableau services will be populated here -->
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <div class="stat-value" id="tableauTotalServices">-</div>
+                        <div class="stat-label">Total Services</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="tableauUpServices" style="color: #10b981;">-</div>
+                        <div class="stat-label">Services Up</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="tableauDownServices" style="color: #ef4444;">-</div>
+                        <div class="stat-label">Services Down</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="tableauAvgResponseTime">-</div>
+                        <div class="stat-label">Avg Response</div>
+                    </div>
+                </div>
+
+                <div class="nodes-grid" id="tableauServicesContainer">
+                    <!-- Tableau services will be populated here -->
+                </div>
             </div>
 
             <div class="actions">
@@ -907,20 +925,44 @@ For support: it-support@uchicago.edu`);
             }
         }
 
-        // Generate Tableau demo data - shows all services with instance counts
-        function generateTableauData() {
+        // Generate Tableau nodes data
+        function generateTableauNodesData() {
+            const tableauNodes = [
+                { name: 'Tableau Server Node 1', type: 'primary', status: 'UP', responseTime: 145 },
+                { name: 'Tableau Server Node 2', type: 'worker', status: 'UP', responseTime: 178 },
+                { name: 'Tableau Server Node 3', type: 'worker', status: 'UP', responseTime: 162 }
+            ];
+
+            const nodes = [];
+
+            tableauNodes.forEach(node => {
+                nodes.push({
+                    node_name: node.name,
+                    status: node.status,
+                    response_time_ms: node.responseTime,
+                    last_check_at: new Date().toISOString(),
+                    last_up_at: new Date().toISOString(),
+                    consecutive_failures: 0
+                });
+            });
+
+            return nodes;
+        }
+
+        // Generate Tableau services data with correct instance counts
+        function generateTableauServicesData() {
             const tableauServices = [
                 { name: 'Cluster Controller', total: 3, up: 3, down: 0, responseTime: 145, description: 'Manages cluster configuration and coordination' },
                 { name: 'Application Server', total: 3, up: 3, down: 0, responseTime: 178, description: 'Handles web requests and user sessions' },
                 { name: 'VizQL Server', total: 3, up: 3, down: 0, responseTime: 234, description: 'Renders visualizations and dashboards' },
                 { name: 'Data Server', total: 3, up: 3, down: 0, responseTime: 156, description: 'Manages data connections and queries' },
-                { name: 'Repository', total: 3, up: 3, down: 0, responseTime: 98, description: 'PostgreSQL database for metadata' },
+                { name: 'Repository', total: 1, up: 1, down: 0, responseTime: 98, description: 'PostgreSQL database for metadata' },
                 { name: 'Cache Server', total: 3, up: 3, down: 0, responseTime: 67, description: 'Caches query results and data' },
-                { name: 'Backgrounder', total: 3, up: 3, down: 0, responseTime: 145, description: 'Executes scheduled tasks and extracts' },
+                { name: 'Backgrounder', total: 2, up: 2, down: 0, responseTime: 145, description: 'Executes scheduled tasks and extracts' },
                 { name: 'Data Engine', total: 3, up: 3, down: 0, responseTime: 112, description: 'In-memory data engine (Hyper)' },
                 { name: 'Gateway', total: 3, up: 3, down: 0, responseTime: 89, description: 'Apache gateway for HTTP/HTTPS' },
                 { name: 'File Store', total: 3, up: 3, down: 0, responseTime: 123, description: 'Distributed file storage' },
-                { name: 'Coordination Service', total: 3, up: 3, down: 0, responseTime: 76, description: 'ZooKeeper for cluster coordination' },
+                { name: 'Coordination Service', total: 1, up: 1, down: 0, responseTime: 76, description: 'ZooKeeper for cluster coordination' },
                 { name: 'Search & Browse', total: 3, up: 3, down: 0, responseTime: 134, description: 'Search and indexing service' }
             ];
 
@@ -946,47 +988,66 @@ For support: it-support@uchicago.edu`);
 
         // Load Tableau status
         function loadTableauStatus() {
-            const services = generateTableauData();
+            // Load nodes
+            const nodes = generateTableauNodesData();
+            const allNodesUp = nodes.every(n => n.status === 'UP');
+            const anyNodeDown = nodes.some(n => n.status === 'DOWN');
 
-            const allUp = services.every(n => n.status === 'UP');
-            const anyDown = services.some(n => n.status === 'DOWN');
+            let nodesOverallStatus;
+            if (allNodesUp) nodesOverallStatus = 'UP';
+            else if (anyNodeDown) nodesOverallStatus = 'DOWN';
+            else nodesOverallStatus = 'DEGRADED';
 
-            let overallStatus;
-            if (allUp) overallStatus = 'UP';
-            else if (anyDown) overallStatus = 'DOWN';
-            else overallStatus = 'DEGRADED';
+            updateTableauNodesOverallStatus(nodesOverallStatus, nodes.length);
+            renderTableauServerNodes(nodes);
 
-            updateTableauOverallStatus(overallStatus, services.length);
+            // Load services
+            const services = generateTableauServicesData();
+            const allServicesUp = services.every(n => n.status === 'UP');
+            const anyServiceDown = services.some(n => n.status === 'DOWN');
+
+            let servicesOverallStatus;
+            if (allServicesUp) servicesOverallStatus = 'UP';
+            else if (anyServiceDown) servicesOverallStatus = 'DOWN';
+            else servicesOverallStatus = 'DEGRADED';
+
+            updateTableauServicesOverallStatus(servicesOverallStatus, services.length);
             updateTableauStats(services);
-            renderTableauNodes(services);
+            renderTableauServices(services);
 
             document.getElementById('lastUpdate').innerHTML =
                 `⏱️ Last Updated: ${new Date().toLocaleString()} | Tableau Server`;
         }
 
-        // Update Tableau statistics
-        function updateTableauStats(services) {
-            const totalNodes = services.length;
-            const upNodes = services.filter(n => n.status === 'UP').length;
-            const downNodes = services.filter(n => n.status === 'DOWN').length;
+        // Update Tableau nodes overall status
+        function updateTableauNodesOverallStatus(status, nodeCount) {
+            const statusEl = document.getElementById('tableauNodesOverallStatus');
+            const messageEl = document.getElementById('tableauNodesStatusMessage');
 
-            const responseTimes = services
-                .filter(n => n.response_time_ms)
-                .map(n => n.response_time_ms);
+            statusEl.className = `status-indicator ${status.toLowerCase()}`;
+            statusEl.classList.remove('pulse');
 
-            const avgResponseTime = responseTimes.length > 0
-                ? Math.round(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length)
-                : 0;
+            const statusIcons = {
+                'UP': '✓',
+                'DOWN': '✗',
+                'DEGRADED': '⚠',
+                'UNKNOWN': '?'
+            };
 
-            document.getElementById('tableauTotalNodes').textContent = totalNodes;
-            document.getElementById('tableauUpNodes').textContent = upNodes;
-            document.getElementById('tableauDownNodes').textContent = downNodes;
-            document.getElementById('tableauAvgResponseTime').textContent =
-                avgResponseTime > 0 ? `${avgResponseTime}ms` : 'N/A';
+            statusEl.textContent = `${statusIcons[status]} ${status}`;
+
+            const statusMessages = {
+                'UP': `All ${nodeCount} Tableau server nodes are operational`,
+                'DOWN': '⚠ Critical: One or more nodes are down',
+                'DEGRADED': '⚠ Warning: Some nodes are degraded',
+                'UNKNOWN': 'Unable to determine nodes status'
+            };
+
+            messageEl.textContent = statusMessages[status] || 'Status unknown';
         }
 
-        // Update Tableau overall status
-        function updateTableauOverallStatus(status, nodeCount) {
+        // Update Tableau services overall status
+        function updateTableauServicesOverallStatus(status, serviceCount) {
             const statusEl = document.getElementById('tableauOverallStatus');
             const messageEl = document.getElementById('tableauStatusMessage');
 
@@ -1003,13 +1064,34 @@ For support: it-support@uchicago.edu`);
             statusEl.textContent = `${statusIcons[status]} ${status}`;
 
             const statusMessages = {
-                'UP': `All ${nodeCount} Tableau services are operational and running smoothly`,
+                'UP': `All ${serviceCount} Tableau services are operational and running smoothly`,
                 'DOWN': '⚠ Critical: One or more Tableau services are down',
                 'DEGRADED': '⚠ Warning: Tableau is running with reduced capacity',
                 'UNKNOWN': 'Unable to determine Tableau status - checking...'
             };
 
             messageEl.textContent = statusMessages[status] || 'Status unknown';
+        }
+
+        // Update Tableau statistics
+        function updateTableauStats(services) {
+            const totalServices = services.length;
+            const upServices = services.filter(n => n.status === 'UP').length;
+            const downServices = services.filter(n => n.status === 'DOWN').length;
+
+            const responseTimes = services
+                .filter(n => n.response_time_ms)
+                .map(n => n.response_time_ms);
+
+            const avgResponseTime = responseTimes.length > 0
+                ? Math.round(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length)
+                : 0;
+
+            document.getElementById('tableauTotalServices').textContent = totalServices;
+            document.getElementById('tableauUpServices').textContent = upServices;
+            document.getElementById('tableauDownServices').textContent = downServices;
+            document.getElementById('tableauAvgResponseTime').textContent =
+                avgResponseTime > 0 ? `${avgResponseTime}ms` : 'N/A';
         }
 
         // Create Tableau service card with instance counts
@@ -1074,9 +1156,25 @@ For support: it-support@uchicago.edu`);
             return card;
         }
 
-        // Render Tableau nodes
-        function renderTableauNodes(services) {
-            const container = document.getElementById('tableauNodesContainer');
+        // Render Tableau server nodes
+        function renderTableauServerNodes(nodes) {
+            const container = document.getElementById('tableauServerNodesContainer');
+            container.innerHTML = '';
+
+            if (nodes.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:white; font-size:1.2em;">No nodes found</p>';
+                return;
+            }
+
+            nodes.forEach(node => {
+                const card = createNodeCard(node);
+                container.appendChild(card);
+            });
+        }
+
+        // Render Tableau services
+        function renderTableauServices(services) {
+            const container = document.getElementById('tableauServicesContainer');
             container.innerHTML = '';
 
             if (services.length === 0) {
