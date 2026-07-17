@@ -1185,24 +1185,13 @@ For support: it-support@uchicago.edu`);
             return servers;
         }
 
-        // Generate Adaptive Job Servers data (aggregated from all 4 nodes)
+        // Generate Adaptive Job Servers data (only 4 servers from BISPRDREP5-8)
         function generateAJSServersData() {
             const ajsServers = [
-                // Node 1 AJS servers
-                { name: 'AdaptiveJobServer1 (Node 1)', node: 1, status: 'UP', responseTime: 134 },
-                { name: 'AdaptiveJobServer2 (Node 1)', node: 1, status: 'UP', responseTime: 156 },
-
-                // Node 2 AJS servers
-                { name: 'AdaptiveJobServer1 (Node 2)', node: 2, status: 'UP', responseTime: 145 },
-                { name: 'AdaptiveJobServer2 (Node 2)', node: 2, status: 'UP', responseTime: 167 },
-
-                // Node 3 AJS servers
-                { name: 'AdaptiveJobServer1 (Node 3)', node: 3, status: 'UP', responseTime: 128 },
-                { name: 'AdaptiveJobServer2 (Node 3)', node: 3, status: 'UP', responseTime: 149 },
-
-                // Node 4 AJS servers
-                { name: 'AdaptiveJobServer1 (Node 4)', node: 4, status: 'UP', responseTime: 152 },
-                { name: 'AdaptiveJobServer2 (Node 4)', node: 4, status: 'UP', responseTime: 138 }
+                { name: 'BISPRDREP5.AdaptiveJobServer', server: 'BISPRDREP5', status: 'UP', responseTime: 134 },
+                { name: 'BISPRDREP6.AdaptiveJobServer', server: 'BISPRDREP6', status: 'UP', responseTime: 145 },
+                { name: 'BISPRDREP7.AdaptiveJobServer', server: 'BISPRDREP7', status: 'UP', responseTime: 128 },
+                { name: 'BISPRDREP8.AdaptiveJobServer', server: 'BISPRDREP8', status: 'UP', responseTime: 152 }
             ];
 
             const servers = [];
@@ -1215,7 +1204,7 @@ For support: it-support@uchicago.edu`);
                     last_check_at: new Date().toISOString(),
                     last_up_at: new Date().toISOString(),
                     consecutive_failures: 0,
-                    source_node: server.node
+                    source_server: server.server
                 });
             });
 
